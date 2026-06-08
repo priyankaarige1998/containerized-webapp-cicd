@@ -43,13 +43,13 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
-        run: docker build -t devops-app .
+        run: docker build -t devops-app:${{ github.sha }} .
 
       - name: Tag Docker image
-        run: docker tag devops-app:latest ${{ steps.login-ecr.outputs.registry }}/devops-app:latest
+        run: docker tag devops-app:${{ github.sha }} ${{ steps.login-ecr.outputs.registry }}/devops-app:${{ github.sha }}
 
       - name: Push Docker image to ECR
-        run: docker push ${{ steps.login-ecr.outputs.registry }}/devops-app:latest
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/devops-app:${{ github.sha }}
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -60,16 +60,14 @@ jobs:
           script: |
             aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 925663248135.dkr.ecr.ap-southeast-2.amazonaws.com
 
-            docker pull 925663248135.dkr.ecr.ap-southeast-2.amazonaws.com/devops-app:latest
+            IMAGE=${{ steps.login-ecr.outputs.registry }}/devops-app:${{ github.sha }}
+
+            docker pull $IMAGE
 
             docker stop devops-app || true
             docker rm devops-app || true
 
-            docker run -d \
-              --name devops-app \
-              --restart always \
-              -p 5000:5000 \
-              925663248135.dkr.ecr.ap-southeast-2.amazonaws.com/devops-app:latest
+            docker run -d --name devops-app -p 5000:5000 $IMAGE
 
 
 
