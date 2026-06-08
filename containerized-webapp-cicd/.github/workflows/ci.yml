@@ -1,0 +1,55 @@
+name: CI-CD Pipeline to AWS ECR
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        run: docker build -t devops-app:${{ github.sha }} .
+
+      - name: Tag Docker image
+        run: docker tag devops-app:${{ github.sha }} ${{ steps.login-ecr.outputs.registry }}/devops-app:${{ github.sha }}
+
+      - name: Push Docker image to ECR
+        run: docker push ${{ steps.login-ecr.outputs.registry }}/devops-app:${{ github.sha }}
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            aws ecr get-login-password --region ap-southeast-2 | docker login --username AWS --password-stdin 925663248135.dkr.ecr.ap-southeast-2.amazonaws.com
+
+            IMAGE=${{ steps.login-ecr.outputs.registry }}/devops-app:${{ github.sha }}
+
+            docker pull $IMAGE
+
+            docker stop devops-app || true
+            docker rm devops-app || true
+
+            docker run -d --name devops-app -p 5000:5000 $IMAGE
+
+
+
