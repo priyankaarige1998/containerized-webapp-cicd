@@ -37,10 +37,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run tests
-        working-directory: containerized-webapp-cicd
-        env:
-          PYTHONPATH: .
-        run: pytest -v
+        run: |
+           cd containerized-webapp-cicd
+           PYTHONPATH=. pytest -v
 
 
       - name: Configure AWS credentials
