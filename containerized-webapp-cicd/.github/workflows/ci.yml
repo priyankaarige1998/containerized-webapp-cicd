@@ -23,8 +23,12 @@ jobs:
           pip install -r requirements.txt
           pip install pytest
 
+      # ✅ FIXED TEST STEP (IMPORTANT PART)
       - name: Run tests
-        run: pytest -v
+        run: |
+          cd containerized-webapp-cicd
+          export PYTHONPATH=$(pwd)
+          pytest -v
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -43,7 +47,7 @@ jobs:
       - name: Tag Docker image
         run: docker tag devops-app:${{ github.sha }} ${{ steps.login-ecr.outputs.registry }}/devops-app:${{ github.sha }}
 
-      - name: Push Docker image
+      - name: Push Docker image to ECR
         run: docker push ${{ steps.login-ecr.outputs.registry }}/devops-app:${{ github.sha }}
 
       - name: Deploy to EC2
