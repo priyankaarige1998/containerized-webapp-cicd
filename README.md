@@ -10,3 +10,25 @@ The application is automatically built, containerized, pushed to AWS ECR, and de
 
 ## 🏗️ Architecture
 
+## Architecture Diagram
+
+```mermaid
+graph TD
+
+A[Developer] --> B[GitHub Repository]
+
+B --> C[GitHub Actions CI/CD]
+
+C --> D[Docker Build Image]
+
+D --> E[AWS ECR Repository]
+
+E --> F[EC2 Instance]
+
+F --> G[Docker Container - Flask App]
+
+G --> H[Nginx Reverse Proxy :80]
+
+H --> I[User Browser]
+
+
