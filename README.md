@@ -1,34 +1,23 @@
-# 🚀 Containerized Web Application with CI/CD (DevOps Project)
+# Containerized Flask App with CI/CD on AWS
 
-## 📌 Project Overview
+## Project Overview
 
-This project demonstrates a complete **end-to-end DevOps CI/CD pipeline** for deploying a Flask web application using Docker, AWS, GitHub Actions, and Nginx.
+This project demonstrates a DevOps CI/CD workflow for deploying a Python Flask application using Docker, GitHub Actions, AWS ECR, AWS EC2, and Nginx.
 
-The application is automatically built, containerized, pushed to AWS ECR, and deployed on an EC2 instance.
+The Flask application is containerized using Docker, the image is pushed to AWS ECR, and the container is deployed on an EC2 Ubuntu server. Nginx is configured as a reverse proxy so the application is accessible on port 80.
 
 ---
 
-## 🏗️ Architecture
-
-## Architecture Diagram
+## Architecture
 
 ```mermaid
 graph TD
-
 A[Developer] --> B[GitHub Repository]
-
-B --> C[GitHub Actions CI/CD]
-
-C --> D[Docker Build Image]
-
-D --> E[AWS ECR Repository]
-
-E --> F[EC2 Instance]
-
-F --> G[Docker Container - Flask App]
-
-G --> H[Nginx Reverse Proxy :80]
-
-H --> I[User Browser]
-
-
+B --> C[GitHub Actions]
+C --> D[Docker Image Build]
+D --> E[AWS ECR]
+E --> F[EC2 Ubuntu Server]
+F --> G[Docker Container]
+G --> H[Flask Application on Port 5000]
+I[User Browser] --> J[Nginx on Port 80]
+J --> H
